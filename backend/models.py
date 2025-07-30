@@ -9,3 +9,5 @@ class Tools(Base):
     code = Column(Text, nullable=False)
     inputs = Column(JSON, nullable=False)  
     output = Column(String, nullable=False)
+    tool_type = Column(String, nullable=True)
+    function_description = Column(String, nullable=True)
