@@ -29,20 +29,20 @@ const Tools = () => {
     }
   }, [loading, tools, id]);
 
-  const handleExecute = () => {
+  const handleExecute = async () => {
     try {
       const args = inputs.map((val, index) => {
         const type = tool.inputs[index].type;
         switch (type) {
-          case 'int': return parseInt(val, 10);
-          case 'float': return parseFloat(val);
+          case 'number': return parseFloat(val);
           case 'boolean': return val === 'true' || val === true;
           default: return val;
         }
       });
 
-      const func = new Function(`${tool.code}\n return ${tool.function_title};`)();
-      setResult(func(...args));
+      const func = new Function(`${tool.code}\n return ${tool.function_title};`)()
+    const res = await func(...args)
+      setResult(res)
       setExecError(null);
     } catch (err) {
       setExecError(err.message);
@@ -66,7 +66,7 @@ const Tools = () => {
           key={index}
           fullWidth
           label={input.human_readable_title}
-          type={input.type === 'int' || input.type === 'float' ? 'number' : 'text'}
+          type={input.type}
           value={inputs[index] || ''}
           onChange={(e) => {
             const updated = [...inputs];
@@ -82,11 +82,16 @@ const Tools = () => {
         <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
       </Box>
 
-      {result !== null && (
-        <Typography sx={{ mt: 3 }}>
-          <strong>Result:</strong> {String(result)}
-        </Typography>
-      )}
+{result !== null && (
+  <Box sx={{ mt: 3 }}>
+    <Typography variant="subtitle1"><strong>Result:</strong></Typography>
+    {typeof result === 'string' && result.startsWith('data:image/') ? (
+      <img src={result} style={{ maxWidth: '100%' }} />
+    ) : (
+      <Typography>{String(result)}</Typography>
+    )}
+  </Box>
+)}
       {execError && (
         <Typography color="error" sx={{ mt: 2 }}>
           Error: {execError}
