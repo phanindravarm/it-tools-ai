@@ -95,10 +95,14 @@ async def send_response(request: Request,db: Session = Depends(get_db)):
 
 Write a complete browser-safe JavaScript function based on the user's query. The function must follow these rules:
 
-1. Dynamically load any required external libraries by injecting a `<script>` tag into the document.
-   - Only inject the script if it's not already loaded.
-   - For example, to load QRCode.js: `https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js`
-   - Use the global object (e.g., `window.QRCode`) to access libraries.
+1.  Dynamically Load External Libraries from CDN
+	•	Identify the appropriate JavaScript library needed for the user’s query.
+	•	Load the library dynamically by injecting a `<script>` tag only if it’s not already loaded.
+	•	Check for the presence of the expected global variable (e.g., `window.QRCode`, `window.Chart`).
+	•	Construct the CDN URL programmatically using a trusted CDN:
+	•	Default to:`https://cdn.jsdelivr.net/npm/package-name@version/file-path `or` https://cdn.jsdelivr.net/gh/user/repo/path` if needed.
+	•	If no version is specified, default to the latest.
+	•	If unpkg/jsDelivr cannot serve a working file, use a GitHub-based jsDelivr fallback.
 
 2. Do **not** use or require an `Element ID` input.
    - The function should not depend on or modify the DOM unless absolutely necessary.
@@ -132,6 +136,7 @@ Required return format:
         messages=[{"role": "user", "content": prompt}],
         response_format=Repsonse_format
     )
+    print(response.choices[0].message.content)
     content = json.loads(response.choices[0].message.content)
     new_data = models.Tools(
         human_readable_function_title = content.get("human_readable_function_title"),

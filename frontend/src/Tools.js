@@ -33,18 +33,29 @@ const Tools = () => {
     try {
       const args = inputs.map((val, index) => {
         const type = tool.inputs[index].type;
+        if (type === 'object' || type === 'json') {
+            try {
+            return JSON.parse(val);
+            } catch (e) {
+            throw new Error("Invalid JSON input at argument " + (index + 1));
+            }
+        }
         switch (type) {
           case 'number': return parseFloat(val);
           case 'boolean': return val === 'true' || val === true;
           default: return val;
         }
       });
-
+      console.log(tool.code)
       const func = new Function(`${tool.code}\n return ${tool.function_title};`)()
     const res = await func(...args)
       setResult(res)
+      if(res.startsWith('data:image/')){
+        console.log("Entered")
+      }
       setExecError(null);
     } catch (err) {
+        console.log("hey")
       setExecError(err.message);
     }
   };
@@ -86,10 +97,11 @@ const Tools = () => {
   <Box sx={{ mt: 3 }}>
     <Typography variant="subtitle1"><strong>Result:</strong></Typography>
     {typeof result === 'string' && result.startsWith('data:image/') ? (
-      <img src={result} style={{ maxWidth: '100%' }} />
+      <img src={result} alt="Generated" style={{ maxWidth: '100%' }} />
     ) : (
       <Typography>{String(result)}</Typography>
     )}
+    <Typography>{String(result)}</Typography>
   </Box>
 )}
       {execError && (
