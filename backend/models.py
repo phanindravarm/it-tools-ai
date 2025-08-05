@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, JSON
+from sqlalchemy import Column, Integer, String, Text, JSON, Boolean
 from database import Base
 
 class Tools(Base):
@@ -11,3 +11,4 @@ class Tools(Base):
     output = Column(String, nullable=False)
     tool_type = Column(String, nullable=True)
     function_description = Column(String, nullable=True)
+    requires_manual_run = Column(Boolean, default=True)

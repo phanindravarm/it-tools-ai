@@ -9,6 +9,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useState, useEffect } from 'react';
+import RenderResult from './RenderResult';
 
 const Tools = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const Tools = () => {
 
   useEffect(() => {
     if (!loading) {
-      const found = tools.find(t => String(t.id) === String(id));
+      const found = tools.find((t) => String(t.id) === String(id));
       if (found) {
         setTool(found);
         setInputs(Array(found.inputs.length).fill(''));
@@ -55,7 +56,7 @@ const Tools = () => {
       }
       setExecError(null);
     } catch (err) {
-        console.log("hey")
+        console.log("Error in function")
       setExecError(err.message);
     }
   };
@@ -95,13 +96,7 @@ const Tools = () => {
 
 {result !== null && (
   <Box sx={{ mt: 3 }}>
-    <Typography variant="subtitle1"><strong>Result:</strong></Typography>
-    {typeof result === 'string' && result.startsWith('data:image/') ? (
-      <img src={result} alt="Generated" style={{ maxWidth: '100%' }} />
-    ) : (
-      <Typography>{String(result)}</Typography>
-    )}
-    <Typography>{String(result)}</Typography>
+    <RenderResult result={result} />
   </Box>
 )}
       {execError && (

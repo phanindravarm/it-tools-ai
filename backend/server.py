@@ -84,6 +84,7 @@ class Repsonse_format(BaseModel):
     inputs : list[Input]
     output: int | str
     tool_type : ToolType
+    requires_manual_run : bool
 
 @app.post("/send")
 async def send_response(request: Request,db: Session = Depends(get_db)):
@@ -121,6 +122,7 @@ Write a complete browser-safe JavaScript function based on the user's query. The
 
 Always write clean, readable JavaScript with useful return values. Do not inject content into the page unless explicitly instructed.
 
+“The generated function must not create or inject any input fields, forms, buttons, or textareas. All user inputs will come from the host application and be passed into the function as arguments
 
 Required return format:
 - `inputs`: list of inputs required by the function
@@ -129,6 +131,7 @@ Required return format:
 - `output`: expected result (example: "QR code generated!" or image URL)
 - `tool_type`: one of the defined enums
 - `function_description`: short explanation of the function
+- `requires_manual_run`: analyze the query , decide true or false
     """
     
     response = completion(
@@ -145,7 +148,8 @@ Required return format:
         inputs = content.get("inputs"),
         output = content.get("output"),
         tool_type = content.get("tool_type"),
-        function_description = content.get("function_description")
+        function_description = content.get("function_description"),
+        requires_manual_run = content.get("requires_manual_run")
     )
     db.add(new_data)
     db.commit()
