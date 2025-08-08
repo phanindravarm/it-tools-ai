@@ -25,7 +25,7 @@ const Home = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/send', {
+      const res = await fetch('https://it-backend-xi.vercel.app/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
@@ -45,7 +45,7 @@ const Home = () => {
   const handleToolDelete = async (id) => {
     setDeletingId(id);
     try {
-      const res = await fetch('http://localhost:8000/tools', {
+      const res = await fetch('https://it-backend-xi.vercel.app/tools', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
