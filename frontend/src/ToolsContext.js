@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-
+import { neon } from '@neondatabase/serverless';
 const ToolsContext = createContext();
 
 export const useTools = () => useContext(ToolsContext);
@@ -12,7 +12,7 @@ export const ToolsProvider = ({ children }) => {
   useEffect(() => {
     const fetchTools = async () => {
       try {
-        const res = await fetch('http://localhost:8000/tools');
+        const res = await fetch('https://it-backend-xi.vercel.app/tools');
         const data = await res.json();
         setTools(data);
       } catch (err) {
