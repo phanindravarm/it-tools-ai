@@ -79,6 +79,7 @@ const Tools = () => {
           fullWidth
           label={input.human_readable_title}
           type={input.type}
+          multiline 
           value={inputs[index] || ''}
           onChange={(e) => {
             const updated = [...inputs];

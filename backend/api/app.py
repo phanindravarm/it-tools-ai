@@ -19,7 +19,12 @@ load_dotenv()
 
 app = FastAPI()
 
-origins = ["https://it-frontend-beryl.vercel.app"]
+origins = [
+    "https://it-backend-xi.vercel.app",      
+    "http://localhost:3000",       
+    "https://it-frontend-beryl.vercel.app",  
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -38,8 +43,28 @@ def get_db():
         db.close()
 
 class InputType(str, Enum):
-    int = "int"
-    string = "string"
+    button = "button"
+    checkbox = "checkbox"
+    color = "color"
+    date = "date"
+    datetime_local = "datetime-local"
+    email = "email"
+    file = "file"
+    hidden = "hidden"
+    image = "image"
+    month = "month"
+    number = "number"
+    password = "password"
+    radio = "radio"
+    range = "range"
+    reset = "reset"
+    search = "search"
+    submit = "submit"
+    tel = "tel"
+    text = "text"
+    time = "time"
+    url = "url"
+    week = "week"
 
 class Input(BaseModel):
     type: InputType
@@ -66,11 +91,41 @@ async def send_response(request: Request, db: Session = Depends(get_db)):
 
     prompt = f"""
     Analyze the query: {query}
-    Your task is to act as a JavaScript code generator with defined inputs and outputs.
-    Format:
-    - inputs: List of input fields
-    - code: Complete JavaScript function
-    - function_description: A short description of the function
+Write a complete browser-safe JavaScript function based on the user's query. The function must follow these rules:
+
+1.  Dynamically Load External Libraries from CDN
+	•	Identify the exact JavaScript library needed for the task.
+	•	Load from a correct working CDN URL (never return an incorrect or non-existent file path).
+	•	Load dynamically only if not already present (`if (!window.LibraryName)`).
+	•	Preferred URL format:
+	•	`https://cdn.jsdelivr.net/npm/<package-name>@<version>/<path-to-file>` or fallback to `https://cdn.jsdelivr.net/gh/<user>/<repo>/<path>`
+	•	Fall back to a proven alternative CDN if unavailable (check package files first; avoid MIME type errors).
+	•	Always check `window.<ExpectedGlobal>` to confirm availability.
+
+2. Do **not** use or require an `Element ID` input.
+   - The function should not depend on or modify the DOM unless absolutely necessary.
+   - If a visual result (e.g. image, chart) must be created, use a temporary off-screen element or canvas internally.
+
+3. The function should **return meaningful output**:
+   - For visual elements like QR codes or charts: return the image or canvas content as a `data:image/png;base64,...` string using `.toDataURL()`.
+   - For calculations or text generation: return the result as a string, number, or array.
+   - If an error occurs, return a string like `"Error: ..."`, not an exception.
+
+4. Only use browser-safe JavaScript.
+   - Do **not** use `require()`, `import`, `fs`, or any Node.js-specific features.
+   - Your code must run in a browser context.
+
+5. Ensure all async operations (e.g., loading scripts, rendering canvases) are handled properly using `await` or `Promise`.
+
+Always write clean, readable JavaScript with useful return values. The function must not create, modify, or inject any HTML input elements (<input>, <form>, <textarea>, <button>, etc.).
+
+“The generated function must not create or inject any input fields, forms, buttons, or textareas. All user inputs will come from the host application and be passed into the function as arguments
+
+Required return format:
+- `inputs`: list of inputs required by the function
+- `code`: complete and functional JavaScript function
+- `function_title`: the exact name of the function
+- `output`: expected result (example: "QR code generated!" or image URL)
     """
 
     response = completion(

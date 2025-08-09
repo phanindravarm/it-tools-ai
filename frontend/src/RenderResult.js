@@ -3,7 +3,6 @@ import { Box, Typography } from '@mui/material';
 export default function RenderResult({ result }) {
   if (result === null || result === undefined) return null;
 
-  // Handle base64 images
   if (result.startsWith('data:image/')) {
     console.log("Entered image")
     return (
@@ -13,7 +12,6 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Handle base64 audio
   if (typeof result === 'string' && result.startsWith('audio/')) {
     return (
       <Box mt={2}>
@@ -24,7 +22,6 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Handle base64 video
   if (typeof result === 'string' && result.startsWith('video/')) {
     return (
       <Box mt={2}>
@@ -35,7 +32,6 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Handle error string
   if (typeof result === 'string' && result.toLowerCase().startsWith('error:')) {
     return (
       <Typography color="error" mt={2}>
@@ -44,17 +40,22 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Handle simple string
-  if (typeof result === 'string') {
+    if (typeof result === 'string') {
+    if (result.includes('\n')) {
+        return (
+        <Box mt={2}>
+            <pre style={{
+            }}>{result}</pre>
+        </Box>
+        );
+    }
     return <Typography mt={2}>{result}</Typography>;
-  }
+    }
 
-  // Handle number and boolean
   if (typeof result === 'number' || typeof result === 'boolean') {
     return <Typography mt={2}>{String(result)}</Typography>;
   }
 
-  // Handle array
   if (Array.isArray(result)) {
     return (
       <Box component="ul" mt={2} sx={{ pl: 2 }}>
@@ -69,7 +70,6 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Handle object
   if (typeof result === 'object') {
     return (
       <Box component="ul" mt={2} sx={{ pl: 2 }}>
@@ -87,7 +87,6 @@ export default function RenderResult({ result }) {
     );
   }
 
-  // Fallback
   return (
     <Typography color="text.secondary" mt={2}>
       Unsupported result format.
