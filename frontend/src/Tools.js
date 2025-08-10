@@ -8,8 +8,9 @@ import {
   Box,
   CircularProgress,
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import RenderResult from './RenderResult';
+import debounce from 'lodash.debounce';
 
 const Tools = () => {
   const { id } = useParams();
@@ -51,15 +52,27 @@ const Tools = () => {
       const func = new Function(`${tool.code}\n return ${tool.function_title};`)()
     const res = await func(...args)
       setResult(res)
-      if(res.startsWith('data:image/')){
-        console.log("Entered")
-      }
       setExecError(null);
     } catch (err) {
         console.log("Error in function")
       setExecError(err.message);
     }
   };
+
+  const debounceExecute = useCallback(
+    debounce(async()=>{
+        if (inputs.every(input => input.trim() !== "")) {
+        await handleExecute();
+      }
+    },200),
+    [inputs]
+  ) 
+
+  useEffect(() => {
+    if (inputs.length && tool) {
+      debounceExecute();
+    }
+  }, [inputs, debounceExecute]);
 
   if (loading || !tool) {
     return (
@@ -91,15 +104,18 @@ const Tools = () => {
       ))}
 
       <Box display="flex" gap={2} mt={2}>
-        <Button variant="contained" onClick={handleExecute}>Run</Button>
         <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
       </Box>
-
-{result !== null && (
-  <Box sx={{ mt: 3 }}>
-    <RenderResult result={result} />
-  </Box>
-)}
+        {inputs.some(input => input.trim() === "") && (
+           <Typography variant="h6" color="textSecondary">
+                Please enter your inputs.
+            </Typography>   
+        )}
+        {result !== null && (
+        <Box sx={{ mt: 3 }}>
+            <RenderResult result={result} />
+        </Box>
+        )}
       {execError && (
         <Typography color="error" sx={{ mt: 2 }}>
           Error: {execError}
