@@ -2,10 +2,10 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from litellm import completion
 from enum import Enum
-from typing import List, Union
+from typing import List, Union, Dict, Optional
 import sys
 import os
 import json
@@ -65,10 +65,19 @@ class InputType(str, Enum):
     time = "time"
     url = "url"
     week = "week"
+    select = "select"
+
+class OptionItem(BaseModel):
+    label: str = Field(..., description="Display text for the option")
+    value: str = Field(..., description="Value sent back when selected")
 
 class Input(BaseModel):
     type: InputType
     human_readable_title: str
+    options: Optional[List[OptionItem]] = Field(
+        default=None,
+        description="Only for select/multi-choice inputs."
+    )
 
 class RepsonseFormat(BaseModel):
     human_readable_function_title: str
@@ -117,15 +126,26 @@ Write a complete browser-safe JavaScript function based on the user's query. The
 
 5. Ensure all async operations (e.g., loading scripts, rendering canvases) are handled properly using `await` or `Promise`.
 
+6.For each input in the `inputs` list:
+    - If the input type is "select" (or other multi-choice type like "radio"):
+        - Include a non-empty `options` array.
+        - Each option must be an object with both "label" and "value" fields.
+        - `value` must be lowercase and exactly one of the allowed keys.
+    - For all other input types, omit the `options` field entirely.
+
 Always write clean, readable JavaScript with useful return values. The function must not create, modify, or inject any HTML input elements (<input>, <form>, <textarea>, <button>, etc.).
 
 “The generated function must not create or inject any input fields, forms, buttons, or textareas. All user inputs will come from the host application and be passed into the function as arguments
+
 
 Required return format:
 - `inputs`: list of inputs required by the function
 - `code`: complete and functional JavaScript function
 - `function_title`: the exact name of the function
 - `output`: expected result (example: "QR code generated!" or image URL)
+
+IMPORTANT: Your output must be a single valid JSON object matching the required format, without any extra text or code fences. The JSON must be complete and parsable.
+
     """
 
     response = completion(
@@ -135,7 +155,6 @@ Required return format:
     )
 
     content = json.loads(response.choices[0].message.content)
-
     new_tool = Tools(
         human_readable_function_title=content["human_readable_function_title"],
         function_title=content["function_title"],

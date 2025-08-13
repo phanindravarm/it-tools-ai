@@ -138,6 +138,7 @@ const Home = () => {
                             fullWidth
                             sx={{backgroundColor: 'rgb(70, 70, 70)',color:'red',}}
                             label="Enter query"
+                            multiline
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />

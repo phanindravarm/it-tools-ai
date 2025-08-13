@@ -1,9 +1,45 @@
-import { Box, Typography } from '@mui/material';
-
+import { Box, Typography, Paper } from '@mui/material';
 export default function RenderResult({ result }) {
+  const renderArray = (arr, depth = 0) => (
+    <Box component="ul" sx={{ pl: depth * 2 }}>
+      {arr.map((item, index) => (
+        <li key={index}>
+          {typeof item === 'object' && item !== null ? (
+            Array.isArray(item)
+              ? renderArray(item, depth + 1)
+              : renderObject(item, depth + 1)
+          ) : (
+            <Typography variant="body2">{String(item)}</Typography>
+          )}
+        </li>
+      ))}
+    </Box>
+  )
+
+  const renderObject = (obj, depth = 0) => (
+    <Box component="ul" sx={{ pl: depth * 2 }}>
+      {Object.entries(obj).map(([key, value]) => (
+        <li key={key}>
+          {typeof value === 'object' && value !== null ? (
+            <>
+              <Typography variant="body2" fontWeight="bold">{key}:</Typography>
+              {Array.isArray(value)
+                ? renderArray(value, depth + 1)
+                : renderObject(value, depth + 1)}
+            </>
+          ) : (
+            <Typography variant="body2">
+              <strong>{key}:</strong> {String(value)}
+            </Typography>
+          )}
+        </li>
+      ))}
+    </Box>
+  );
+
   if (result === null || result === undefined) return null;
 
-  if (result.startsWith('data:image/')) {
+  if (typeof result === 'string' && result.startsWith('data:image/')) {
     console.log("Entered image")
     return (
       <Box mt={2}>
@@ -40,6 +76,17 @@ export default function RenderResult({ result }) {
     );
   }
 
+  if (typeof result === 'string') {
+      try {
+    const parsed = JSON.parse(result);
+    if (typeof parsed === 'object' && parsed !== null) {
+      result = parsed;
+    }
+  } catch {
+
+  }
+  }
+
     if (typeof result === 'string') {
     if (result.includes('\n')) {
         return (
@@ -71,20 +118,7 @@ export default function RenderResult({ result }) {
   }
 
   if (typeof result === 'object') {
-    return (
-      <Box component="ul" mt={2} sx={{ pl: 2 }}>
-        {Object.entries(result).map(([key, value]) => (
-          <li key={key}>
-            <Typography variant="body2">
-              <strong>{key}:</strong>{' '}
-              {typeof value === 'object'
-                ? JSON.stringify(value, null, 2)
-                : String(value)}
-            </Typography>
-          </li>
-        ))}
-      </Box>
-    );
+        return renderObject(result);
   }
 
   return (
